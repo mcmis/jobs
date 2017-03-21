@@ -1,0 +1,141 @@
+<?php
+
+namespace MCMIS\Jobs\Subscribers\Complain;
+
+use App\ComplainStatus;
+use App\Complaint;
+use App\ComplaintsUnassigned;
+use App\Jobs\Mails\ComplainEmailJob;
+use App\Jobs\Mails\DepartmentComplainEmailJob;
+use App\Models\Operation\ComplaintAssignment;
+use App\Models\Organization\Department;
+use App\Models\UserManagement\Role;
+use Illuminate\Foundation\Bus\DispatchesJobs;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Support\Facades\Log;
+
+class Assigning implements ShouldQueue
+{
+    use DispatchesJobs;
+
+    public function onComplaint(Complaint $complaint)
+    {
+        Log::info('OnComplaint triggered on behalf of complain#'.$complaint->complain_no);
+        $this->dispatch((new ComplainEmailJob($complaint, $complaint->user))->onQueue('emails'));
+        //$this->doAssign($complaint);
+    }
+
+    public function onComplaintAssigned(Complaint $complaint, Department $department, $assignment)
+    {
+        Log::info('Complaint has been assigned to department:'.$department);
+        event('complaint.status.forwarded', $complaint, ($assignment->assigner_id ? $assignment->assignee->users->first() : null));
+        //$this->dispatch((new ComplainEmailJob($complaint, $complaint->user, 'update'))->onQueue('emails'));
+        ComplaintsUnassigned::where('complaint_id', '=', $complaint->id)->delete();
+    }
+
+    public function onComplaintAssignmentFailed(Complaint $complaint)
+    {
+        Log::info('Complaint assignment failed:'.$complaint);
+        ComplaintsUnassigned::create([
+            'complaint_id' => $complaint->id,
+        ]);
+        if($complaint->user->id == $complaint->creator->first()->id){
+            $operators = Role::with('users')->where('name', '=', 'operator')->first()->users;
+            foreach($operators as $operator) //send email to operators about failed assignment to department
+                if($employee = $operator->employee->first()) { //check if operator user is employee or not
+                    Log::info('Complain user and creator are same and current is employee:' . $employee);
+                    $this->dispatch((new ComplainEmailJob($complaint, $employee, 'forward.failed', 'donotreply'))->onQueue('alerts'));
+                }
+        }else{
+            //send email to complaint creator operator about failed assignment to department
+            if($employee = $complaint->creator->first()->employee->first()) { //check if operator user is employee or not
+                Log::info('Complain user and creator are not same and creator is employee:' . $employee);
+                $this->dispatch((new ComplainEmailJob($complaint, $employee, 'forward.failed', 'donotreply'))->onQueue('alerts'));
+            }
+        }
+    }
+
+    public function onManualComplaintAssignment(Complaint $complaint, $department_id, $operator = false)
+    {
+        Log::info('Complaint assignment manually to department: '. $department_id);
+        if($complaint->hasParent()){
+            $this->doAssign($complaint = $complaint->parent->first(), $department_id, $operator);
+        }else $this->doAssign($complaint, $department_id, $operator);
+        if($complaint->hasChild()) event('complaints.group.assignment', [$complaint->children, $department_id, $operator]);
+    }
+
+    public function onComplaintAssignedFieldworker(Complaint $complaint, ComplaintAssignment $assignment){
+        Log::info('Complaint assigned to employee: '. $assignment->employee);
+        $this->dispatch((new ComplainEmailJob($complaint, $complaint->user, 'update.status.assigned'))->onQueue('emails'));
+        $this->dispatch((new DepartmentComplainEmailJob($assignment->department, $complaint, $assignment->employee, 'update.department', 'donotreply'))->onQueue('alerts'));
+    }
+
+    public function doAssign(Complaint $complaint, $department_id = false, $requested_by = false){
+        $category = $complaint->child_category_id ? $complaint->childCategory : $complaint->category;
+
+        $assignment_failed = false;
+
+        $department = $category->department;
+        if($department_id !== false) $department = Department::findOrFail($department_id);
+        if($department && ComplaintAssignment::where('complaint_id', '=', $complaint->id)->whereIn('department_id', [$department->id])->count() < 1){
+
+            $supervisors = $department->employees()
+                ->whereHas('designation', function($query){
+                    $query->where('title', '=', 'Supervisor');
+                })->get();
+            $assigned = false;
+            foreach($supervisors as $supervisor){
+                $assigned = $complaint->assignments()->create([
+                    'department_id' => $department->id,
+                    'employee_id' => $supervisor->id,
+                    'by_system' => ($requested_by == false ? true : false),
+                    'assigner_id' => ($requested_by == false ? null : $requested_by->id) //employee id
+                ]);
+                $this->dispatch((new DepartmentComplainEmailJob($department, $complaint, $supervisor, 'forwarded', 'donotreply'))->onQueue('alerts'));
+            }
+
+            if($assigned) event('complaint.assigned', [$complaint, $department, $assigned]);
+            else event('complaint.assignment.failed', $complaint);
+        }else event('complaint.assignment.failed', $complaint);
+    }
+
+    public function onGroupedComplaintsAssignment($complaints, $department_id = false, $requested_by = false){
+        Log::info('Grouped Complaints assignment to department: '. $department_id);
+        foreach($complaints as $complaint){
+            $this->doAssign($complaint, $department_id, $requested_by);
+        }
+    }
+
+    public function subscribe($events)
+    {
+        $events->listen(
+            'complain.registered',
+            'App\Listeners\Complaints\AssignmentListener@onComplaint'
+        );
+
+        $events->listen(
+            'complaint.assigned',
+            'App\Listeners\Complaints\AssignmentListener@onComplaintAssigned'
+        );
+
+        $events->listen(
+            'complaint.assignment.failed',
+            'App\Listeners\Complaints\AssignmentListener@onComplaintAssignmentFailed'
+        );
+
+        $events->listen(
+            'complaint.assign.manually',
+            'App\Listeners\Complaints\AssignmentListener@onManualComplaintAssignment'
+        );
+
+        $events->listen(
+            'complaints.group.assignment',
+            'App\Listeners\Complaints\AssignmentListener@onGroupedComplaintsAssignment'
+        );
+
+        $events->listen(
+            'complaint.assigned.fieldworker',
+            'App\Listeners\Complaints\AssignmentListener@onComplaintAssignedFieldworker'
+        );
+    }
+}
