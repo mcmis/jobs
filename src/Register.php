@@ -14,7 +14,7 @@ class Register
      * @return void
      */
     public function bootstrap(Application $app){
-        (new SubscriptionsRepository(sys('Illuminate\Contracts\Events\Dispatcher')))->register();
+        (new SubscriptionsRepository($app->make('Illuminate\Contracts\Events\Dispatcher')))->register();
     }
 
 }
