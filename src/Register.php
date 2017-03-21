@@ -1,9 +1,8 @@
 <?php
 
-namespace MCMIS\Workflow;
+namespace MCMIS\Jobs;
 
 use Illuminate\Contracts\Foundation\Application;
-use MCMIS\Jobs\SubscriptionsRepository;
 
 class Register
 {
