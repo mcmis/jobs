@@ -5,7 +5,7 @@ namespace MCMIS\Jobs\Subscribers\Complain;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use MCMIS\Contracts\Foundation\Model\ComplainCommentContract;
+use MCMIS\Contracts\Foundation\Model\ComplainComment;
 use Illuminate\Support\Facades\Log;
 use MCMIS\Jobs\Alerts\CommentMailAlert;
 
@@ -16,7 +16,7 @@ class OnComment implements ShouldQueue
 
     public $queue = 'default';
 
-    public function handle(ComplainCommentContract $comment)
+    public function handle(ComplainComment $comment)
     {
         Log::info('OnComment triggered on behalf of complain comment#'.$comment->serial .' on complaint#'. $comment->complaint->complain_no);
         $comment_type = 'update';
@@ -64,7 +64,7 @@ class OnComment implements ShouldQueue
         }
     }
 
-    public function failed(ComplainCommentContract $comment, $exception)
+    public function failed(ComplainComment $comment, $exception)
     {
         Log::info('Failed to comment event for complain#'.$comment->complaint->complain_no.'. \n Exception:: '.$exception);
     }

@@ -2,9 +2,8 @@
 
 namespace MCMIS\Jobs\SystemSubscribers;
 
-use MCMIS\Contracts\Foundation\Model\ComplainContract;
-use MCMIS\Contracts\Foundation\Model\UserContract;
-use Illuminate\Foundation\Auth\User;
+use MCMIS\Contracts\Foundation\Model\Complain;
+use MCMIS\Contracts\Foundation\Model\User;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -17,7 +16,7 @@ class ForceChangeStateForward extends Job implements ShouldQueue
 
     protected $complaint, $user;
 
-    public function __construct(ComplainContract $complaint, UserContract $user = null)
+    public function __construct(Complain $complaint, User $user = null)
     {
         $this->complaint = $complaint;
         $this->user = $user;

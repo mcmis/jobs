@@ -2,6 +2,7 @@
 
 namespace MCMIS\Jobs\Alerts;
 
+use MCMIS\Contracts\Foundation\Model\ComplainComment;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -20,7 +21,7 @@ class CommentMailAlert extends Job implements ShouldQueue
      *
      * @return void
      */
-    public function __construct(ComplainCommentContract $comment, $to = null, $type = 'update', $from = 'support')
+    public function __construct(ComplainComment $comment, $to = null, $type = 'update', $from = 'support')
     {
         $this->comment = $comment;
         $this->type = $type;

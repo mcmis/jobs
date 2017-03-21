@@ -2,7 +2,7 @@
 
 namespace MCMIS\Jobs\Alerts;
 
-use MCMIS\Contracts\Foundation\Model\UserContract;
+use MCMIS\Contracts\Foundation\Model\User;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -21,7 +21,7 @@ class UserMailAlert extends Job implements ShouldQueue
      *
      * @return void
      */
-    public function __construct(UserContract $user, $to = null, $type = 'new.user', $from = 'support')
+    public function __construct(User $user, $to = null, $type = 'new.user', $from = 'support')
     {
         $this->user = $user;
         $this->type = $type;

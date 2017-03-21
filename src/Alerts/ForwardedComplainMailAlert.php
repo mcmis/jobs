@@ -2,8 +2,8 @@
 
 namespace MCMIS\Jobs\Alerts;
 
-use MCMIS\Contracts\Foundation\Model\ComplainContract;
-use MCMIS\Contracts\Foundation\Model\DepartmentContract;
+use MCMIS\Contracts\Foundation\Model\Complain;
+use MCMIS\Contracts\Foundation\Model\Department;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -22,7 +22,7 @@ class ForwardedComplainMailAlert extends Job implements ShouldQueue
      *
      * @return void
      */
-    public function __construct(DepartmentContract $department, ComplainContract $complaint, $to = null, $type = 'forwarded', $from = 'donotreply')
+    public function __construct(Department $department, Complain $complaint, $to = null, $type = 'forwarded', $from = 'donotreply')
     {
         $this->board = $complaint;
         $this->type = $type;

@@ -4,7 +4,7 @@ namespace MCMIS\Jobs\Dos\Complain;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use MCMIS\Contracts\Foundation\Model\ComplainContract;
+use MCMIS\Contracts\Foundation\Model\Complain;
 use Illuminate\Support\Facades\Log;
 use MCMIS\Jobs\Dos\Complain\Traits\AssignTrait;
 
@@ -15,7 +15,7 @@ class DoForward implements ShouldQueue
 
     public $queue = 'default';
 
-    public function handle(ComplainContract $complaint, $department_id, $operator = false)
+    public function handle(Complain $complaint, $department_id, $operator = false)
     {
         Log::info('Complaint assignment manually to department: '. $department_id);
         if($complaint->hasParent()){
@@ -24,7 +24,7 @@ class DoForward implements ShouldQueue
         if($complaint->hasChild()) event('complaints.group.assignment', [$complaint->children, $department_id, $operator]);
     }
 
-    public function failed(ComplainContract $complaint, $exception)
+    public function failed(Complain $complaint, $exception)
     {
         Log::info('Failed to assign manually complain to department event for complain#'.$complaint->complain_no.'. \n Exception:: '.$exception);
     }

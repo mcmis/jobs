@@ -2,7 +2,7 @@
 
 namespace MCMIS\Jobs\Alerts;
 
-use MCMIS\Contracts\Foundation\Model\ComplainContract;
+use MCMIS\Contracts\Foundation\Model\Complain;
 use MCMIS\Jobs\Job;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
@@ -21,7 +21,7 @@ class ComplainMailAlert extends Job implements ShouldQueue
      *
      * @return void
      */
-    public function __construct(ComplainContract $complaint, $to = null, $type = 'new.complain', $from = 'support')
+    public function __construct(Complain $complaint, $to = null, $type = 'new.complain', $from = 'support')
     {
         $this->complaint = $complaint;
         $this->type = $type;
@@ -53,7 +53,7 @@ class ComplainMailAlert extends Job implements ShouldQueue
         Log::info('Email sent to:'. $to . ', subject: '. $subject);
     }
 
-    public function failed(ComplainContract $complaint, $exception)
+    public function failed(Complain $complaint, $exception)
     {
         Log::info('Failed to email for complain#'.$complaint->complain_no.'. \n Exception:: '.$exception);
     }

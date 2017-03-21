@@ -2,12 +2,12 @@
 
 namespace MCMIS\Jobs\Dos\Complain\Traits;
 
-use MCMIS\Contracts\Foundation\Model\ComplainContract;
+use MCMIS\Contracts\Foundation\Model\Complain;
 use MCMIS\Jobs\Alerts\ForwardedComplainMailAlert;
 
 trait AssignTrait
 {
-    public function doAssign(ComplainContract $complaint, $department_id = false, $requested_by = false){
+    public function doAssign(Complain $complaint, $department_id = false, $requested_by = false){
         $category = $complaint->child_category_id ? $complaint->childCategory : $complaint->category;
 
         $assignment_failed = false;

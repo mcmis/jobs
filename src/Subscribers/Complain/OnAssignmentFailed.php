@@ -5,7 +5,7 @@ namespace MCMIS\Jobs\Subscribers\Complain;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use MCMIS\Contracts\Foundation\Model\ComplainContract;
+use MCMIS\Contracts\Foundation\Model\Complain;
 use Illuminate\Support\Facades\Log;
 use MCMIS\Jobs\Alerts\ComplainMailAlert;
 
@@ -16,7 +16,7 @@ class OnAssignmentFailed implements ShouldQueue
 
     public $queue = 'default';
 
-    public function handle(ComplainContract $complaint)
+    public function handle(Complain $complaint)
     {
         Log::info('Complaint assignment failed:'.$complaint);
         sys('model.complain.unassigned')->create([
@@ -38,7 +38,7 @@ class OnAssignmentFailed implements ShouldQueue
         }
     }
 
-    public function failed(ComplainContract $complaint, $exception)
+    public function failed(Complain $complaint, $exception)
     {
         Log::info('Failed to failed assigned complain to department event for complain#'.$complaint->complain_no.'. \n Exception:: '.$exception);
     }
