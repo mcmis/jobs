@@ -10,18 +10,11 @@
         }
     ],
     "require": {
-        "php": ">=5.5.9",
-        "mcmis/base" : ">=0.5",
-        "mcmis/foundation" : ">=0.5"
+        "php": ">=5.5.9"
     },
     "autoload": {
         "psr-4": {
             "MCMIS\\Jobs\\": "src/"
-        }
-    },
-    "extra": {
-        "branch-alias": {
-            "dev-master": "0.5.x-dev"
         }
     }
 }
