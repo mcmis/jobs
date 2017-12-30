@@ -19,7 +19,7 @@ class OnStateInProcess implements ShouldQueue
     public function handle(Complain $complaint)
     {
         Log::info('OnComplaintInProcess triggered on behalf of complain#'.$complaint->complain_no);
-        $this->dispatch((new ForceChangeStateDelay($complaint))->delay(Carbon::now()->addDay(5)));
+        $this->dispatch((new ForceChangeStateDelay($complaint))->delay(Carbon::now()->addWeekdays(5)));
     }
 
     public function failed(Complain $complaint, $exception)

@@ -19,7 +19,7 @@ class OnStatePending implements ShouldQueue
     public function handle(Complain $complaint)
     {
         Log::info('On status changed to pending triggered on behalf of complain#'.$complaint->complain_no);
-        $this->dispatch((new ForceChangeStateCancel($complaint))->delay(Carbon::now()->addDay(2)));
+        $this->dispatch((new ForceChangeStateCancel($complaint))->delay(Carbon::now()->addWeekdays(1)));
     }
 
     public function failed(Complain $complaint, $exception)
