@@ -13,6 +13,7 @@ class SubscriptionsRepository implements Repository
         'MCMIS\Jobs\Subscribers\User\Subscriber',
         'MCMIS\Jobs\Subscribers\Status\Subscriber',
         'MCMIS\Jobs\Subscribers\Notice\Subscriber',
+        'MCMIS\Jobs\Subscribers\Company\Subscriber',
     ];
 
     public function __construct(Dispatcher $dispatcher)
