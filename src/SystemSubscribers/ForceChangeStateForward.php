@@ -37,8 +37,11 @@ class ForceChangeStateForward extends Job implements ShouldQueue
             if($this->complaint->update(['status' => $status = sys('model.status')->where('short_code', '=', 'forwarded.department')->first()->id])){
                 //send email to user and staff
                 Log::info('Complaint#'. $this->complaint->complain_no .' status changed to forwarded to department from '. $last_status . '.');
+
+                //'msg' => 'System successfully forwarded complaint to concerned department on request.'
+
                 $comment = $this->complaint->comments()->create([
-                    'msg' => 'System successfully forwarded complaint to concerned department on request.',
+                    'msg' => 'El sistema en envió con éxito la denuncia al departamento correspondiente.',
                     'user_id' => ($this->user ? $this->user->id : 1),
                     'status' => $status,
                     'last_status' => $last_status,
